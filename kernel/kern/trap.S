@@ -75,9 +75,57 @@ EXCEPTION_HANDLER:
     j USERRET_MACHINE
 
 .HANDLE_INT:
-    // 暂未实现
+    andi t0, t0, EX_INT_TYPE_MASK
+    li t1, EX_INT_TYPE_TIMER
+    beq t0, t1, .HANDLE_TIMER
+    li t1, EX_INT_TYPE_EXTERNAL
+    beq t0, t1, .HANDLE_EXTERNAL
+
     j FATAL
 
+.HANDLE_TIMER:
+    la ra, current_frame
+    LOAD a2, 0(ra)
+    la t2, frame_data
+    li t3, 0x20000000
+    li t0, 0
+.LC0_0:
+    beq t0, a2, .LC0_1
+    addi t2, t2, 384*XLEN
+    addi t0, t0, 1
+    j .LC0_0
+.LC0_1:
+    li t0, 0
+    li t1, 384
+.LC0_2:
+    LOAD t4, 0(t2)
+    STORE t4, 0(t3)
+    addi t2, t2, XLEN
+    addi t3, t3, XLEN
+    addi t0, t0, 1
+    bne t0, t1, .LC0_2
+
+    la ra, playing
+    LOAD a1, 0(ra)
+    beqz a1, .LC0_4
+
+    la ra, n_frames
+    LOAD a3, 0(ra)
+    addi a2, a2, 1
+    bne a2, a3, .LC0_3
+    li a2, 0
+.LC0_3:
+    la ra, current_frame
+    STORE a2, 0(ra)
+.LC0_4:
+    j CONTEXT_SWITCH
+
+.HANDLE_EXTERNAL:
+    la ra, playing
+    LOAD t0, 0(ra)
+    xor t0, t0, 1
+    STORE t0, 0(ra) 
+    j CONTEXT_SWITCH
 
 CONTEXT_SWITCH:
     LOAD t0, TF_epc(sp)

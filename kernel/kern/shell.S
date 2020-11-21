@@ -141,6 +141,8 @@ SHELL:
     csrw mepc, s10                // 用户程序入口写入EPC
     li a0, MSTATUS_MPP_MASK
     csrc mstatus, a0     // 设置 MPP=0 ，对应 U-mode
+    li a0, 0x80
+    csrs mstatus, a0     // mpie
 #endif
 
     la ra, uregs              // 定位用户空间寄存器备份地址

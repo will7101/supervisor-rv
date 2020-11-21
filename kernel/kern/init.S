@@ -88,6 +88,11 @@ bss_init:
 
 bss_init_done:
 #ifdef ENABLE_INT
+    li s0, 0x880 // timer & external
+    csrw mie, s0
+    li s0, 0x8  // mstatus.mie
+    csrw mstatus, s0
+
     // 设置异常处理地址寄存器 mtvec
     la s0, EXCEPTION_HANDLER
     csrw mtvec, s0
