@@ -72,6 +72,8 @@ EXCEPTION_HANDLER:
     j CONTEXT_SWITCH
 
 .HANDLE_BREAK:
+    li s1, 0x8  // mstatus.mie
+    csrw mstatus, s1
     j USERRET_MACHINE
 
 .HANDLE_INT:
@@ -91,12 +93,13 @@ EXCEPTION_HANDLER:
     li t0, 0
 .LC0_0:
     beq t0, a2, .LC0_1
-    addi t2, t2, 384*XLEN
+    li t4, 160*120
+    add t2, t2, t4
     addi t0, t0, 1
     j .LC0_0
 .LC0_1:
     li t0, 0
-    li t1, 384
+    li t1, 160*120/4
 .LC0_2:
     LOAD t4, 0(t2)
     STORE t4, 0(t3)
